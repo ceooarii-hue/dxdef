@@ -1,20 +1,32 @@
 local REMOTE_BASE = "https://raw.githubusercontent.com/ceooarii-hue/dxdef/main/"
 
-local function run_local(paths)
+local function normalize_remote_path(path)
+    return path:gsub(" ", "%%20")
+end
+
+local function run_module(paths)
     for _, path in ipairs(paths) do
-        local ok, result = pcall(readfile, path)
-        if ok and result then
-            return loadstring(result)()
+        local ok, result = pcall(function()
+            return game:HttpGet(REMOTE_BASE .. normalize_remote_path(path))
+        end)
+
+        if ok and result and result ~= "404: Not Found" then
+            local chunk, err = loadstring(result)
+            if not chunk then
+                error("failed to compile remote script: " .. path .. " | " .. tostring(err))
+            end
+            return chunk()
         end
     end
 
     for _, path in ipairs(paths) do
-        local ok, result = pcall(function()
-            return game:HttpGet(REMOTE_BASE .. path)
-        end)
-
-        if ok and result and result ~= "404: Not Found" then
-            return loadstring(result)()
+        local ok, result = pcall(readfile, path)
+        if ok and result then
+            local chunk, err = loadstring(result)
+            if not chunk then
+                error("failed to compile local script: " .. path .. " | " .. tostring(err))
+            end
+            return chunk()
         end
     end
 
@@ -42,62 +54,62 @@ if getgenv().RemapHWindow and getgenv().RemapHWindow.Destroy then
     end)
 end
 
-run_local({
+run_module({
     "tps/modules/Bypass.lua",
     "modules/Bypass.lua",
 })
 
-local Chams = run_local({
+local Chams = run_module({
     "tps/modules/Chams.lua",
     "modules/Chams.lua",
 })
 
-local ReachFTI = run_local({
+local ReachFTI = run_module({
     "tps/modules/Reach(FTI).lua",
     "modules/Reach(FTI).lua",
 })
 
-local Reacts = run_local({
+local Reacts = run_module({
     "tps/modules/Reacts.lua",
     "modules/Reacts.lua",
 })
 
-local LookDistance = run_local({
+local LookDistance = run_module({
     "tps/modules/Look distance.lua",
     "modules/Look distance.lua",
 })
 
-local FirstClick = run_local({
+local FirstClick = run_module({
     "tps/modules/First click.lua",
     "modules/First click.lua",
 })
 
-local SecondClick = run_local({
+local SecondClick = run_module({
     "tps/modules/Second click.lua",
     "modules/Second click.lua",
 })
 
-local MacroReact = run_local({
+local MacroReact = run_module({
     "tps/modules/Macro react.lua",
     "modules/Macro react.lua",
 })
 
-local BallSize = run_local({
+local BallSize = run_module({
     "tps/modules/Ball size.lua",
     "modules/Ball size.lua",
 })
 
-local BallSkin = run_local({
+local BallSkin = run_module({
     "tps/modules/Ball skin changer.lua",
     "modules/Ball skin changer.lua",
 })
 
-local AirHelper = run_local({
+local AirHelper = run_module({
     "tps/modules/AirHelper.lua",
     "modules/AirHelper.lua",
 })
 
-local AvatarStolen = run_local({
+local AvatarStolen = run_module({
     "tps/modules/Avatarstolen.lua",
     "modules/Avatarstolen.lua",
 })
@@ -202,7 +214,7 @@ reachTab:Toggle({
             ReachFTI.enable()
         else
             ReachFTI.destroy()
-            ReachFTI = run_local({
+            ReachFTI = run_module({
                 "tps/modules/Reach(FTI).lua",
                 "modules/Reach(FTI).lua",
             })
@@ -244,7 +256,7 @@ reactsTab:Toggle({
             Reacts.enable()
         else
             Reacts.destroy()
-            Reacts = run_local({
+            Reacts = run_module({
                 "tps/modules/Reacts.lua",
                 "modules/Reacts.lua",
             })
@@ -453,7 +465,7 @@ miscTab:Toggle({
             AirHelper.enable()
             AirHelper.setSize(airSize)
         else
-            AirHelper = run_local({
+            AirHelper = run_module({
                 "tps/modules/AirHelper.lua",
                 "modules/AirHelper.lua",
             })
@@ -508,7 +520,7 @@ avatarTab:Button({
     Title = "Stop avatar steal",
     Callback = function()
         AvatarStolen.destroy()
-        AvatarStolen = run_local({
+        AvatarStolen = run_module({
             "tps/modules/Avatarstolen.lua",
             "modules/Avatarstolen.lua",
         })
