@@ -7,9 +7,9 @@ if env.ReachMethod2 and type(env.ReachMethod2.destroy) == "function" then
     pcall(env.ReachMethod2.destroy)
 end
 
-local _char_conn = nil
-local _size_token = 0
-local _parts = {}
+local charConn = nil
+local sizeToken = 0
+local parts = {}
 
 local function is_body_part(part)
     if not part or not part:IsA("BasePart") then return false end
@@ -25,9 +25,9 @@ local function is_body_part(part)
 end
 
 local function cleanup_parts()
-    _size_token = _size_token + 1
+    sizeToken = sizeToken + 1
 
-    for _, entry in ipairs(_parts) do
+    for _, entry in ipairs(parts) do
         if entry.visualizer and entry.visualizer.Parent then
             entry.visualizer:Destroy()
         end
@@ -41,7 +41,7 @@ local function cleanup_parts()
         end
     end
 
-    _parts = {}
+    parts = {}
 end
 
 local function apply(char)
@@ -72,17 +72,16 @@ local function apply(char)
             clone.Parent = char
             clone.CFrame = original.CFrame
 
-            local visualizer = Instance.new("BoxHandleAdornment")
+            local visualizer = Instance.new("SelectionBox")
             visualizer.Name = original.Name .. "_ReachM2"
             visualizer.Parent = CoreGui
             visualizer.Adornee = original
-            visualizer.Color3 = Color3.fromRGB(90, 170, 255)
-            visualizer.Transparency = 0.72
-            visualizer.AlwaysOnTop = true
-            visualizer.ZIndex = 5
-            visualizer.Size = env.ReachMethod2.size
+            visualizer.Color3 = Color3.fromRGB(95, 170, 255)
+            visualizer.LineThickness = 0.03
+            visualizer.SurfaceTransparency = 1
+            visualizer.Visible = env.ReachMethod2.visualizerEnabled
 
-            _parts[#_parts + 1] = {
+            parts[#parts + 1] = {
                 original = original,
                 clone = clone,
                 visualizer = visualizer,
@@ -98,29 +97,35 @@ local function apply(char)
     end
 
     local last = env.ReachMethod2.size
-    local token = _size_token + 1
-    _size_token = token
+    local token = sizeToken + 1
+    sizeToken = token
+
     task.spawn(function()
-        while _size_token == token and env.ReachMethod2 do
+        while sizeToken == token and env.ReachMethod2 do
             local cur = env.ReachMethod2.size
             if cur ~= last then
-                for _, entry in ipairs(_parts) do
+                for _, entry in ipairs(parts) do
                     if entry.original and entry.original.Parent then
                         entry.original.Size = cur
-                    end
-                    if entry.visualizer and entry.visualizer.Parent then
-                        entry.visualizer.Size = cur
                     end
                 end
                 last = cur
             end
+
+            for _, entry in ipairs(parts) do
+                if entry.visualizer and entry.visualizer.Parent then
+                    entry.visualizer.Visible = env.ReachMethod2.visualizerEnabled
+                end
+            end
+
             task.wait(0.1)
         end
     end)
 end
 
 env.ReachMethod2 = {
-    size = Vector3.new(25, 2, 25),
+    size = Vector3.new(10, 2, 10),
+    visualizerEnabled = true,
 }
 
 env.ReachMethod2.enable = function()
@@ -129,24 +134,30 @@ env.ReachMethod2.enable = function()
         task.spawn(apply, char)
     end
 
-    if _char_conn then _char_conn:Disconnect() end
-    _char_conn = lp.CharacterAdded:Connect(apply)
+    if charConn then charConn:Disconnect() end
+    charConn = lp.CharacterAdded:Connect(apply)
 end
 
 env.ReachMethod2.setSize = function(x, z)
     env.ReachMethod2.size = Vector3.new(x, 2, z)
-    for _, entry in ipairs(_parts) do
+    for _, entry in ipairs(parts) do
         if entry.original and entry.original.Parent then
             entry.original.Size = env.ReachMethod2.size
         end
+    end
+end
+
+env.ReachMethod2.setVisualizerEnabled = function(state)
+    env.ReachMethod2.visualizerEnabled = state
+    for _, entry in ipairs(parts) do
         if entry.visualizer and entry.visualizer.Parent then
-            entry.visualizer.Size = env.ReachMethod2.size
+            entry.visualizer.Visible = state
         end
     end
 end
 
 env.ReachMethod2.destroy = function()
-    if _char_conn then _char_conn:Disconnect(); _char_conn = nil end
+    if charConn then charConn:Disconnect(); charConn = nil end
     cleanup_parts()
     env.ReachMethod2 = nil
 end

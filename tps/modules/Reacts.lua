@@ -47,15 +47,7 @@ local function apply_react(linearVelocity, angularVelocity, frames)
 end
 
 Reacts.betterReact = function()
-    return apply_react(Vector3.new(112, 112, 112), Vector3.new(20, 20, 20), 7)
-end
-
-Reacts.alzReact = function()
-    return apply_react(Vector3.new(122, 132, 122), Vector3.new(24, 20, 24), 8)
-end
-
-Reacts.foxtedeReact = function()
-    return apply_react(Vector3.new(138, 126, 138), Vector3.new(30, 24, 30), 9)
+    return apply_react(Vector3.new(110, 110, 110), Vector3.new(32, 32, 32), 10)
 end
 
 Reacts.destroy = function()

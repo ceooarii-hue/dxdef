@@ -250,6 +250,9 @@ local reachMethod2X = ReachMethod2.size.X
 local reachMethod2Z = ReachMethod2.size.Z
 local reachMethod3X = ReachHRP.size.X
 local reachMethod3Z = ReachHRP.size.Z
+local reachVisualizer1 = ReachFTI.visualizerEnabled
+local reachVisualizer2 = ReachMethod2.visualizerEnabled
+local reachVisualizer3 = ReachHRP.visualizerEnabled
 
 local function reload_reach_fti()
     ReachFTI.destroy()
@@ -257,6 +260,7 @@ local function reload_reach_fti()
         "tps/modules/Reach(FTI).lua",
         "modules/Reach(FTI).lua",
     })
+    ReachFTI.setVisualizerEnabled(reachVisualizer1)
 end
 
 local function reload_reach_method2()
@@ -267,6 +271,7 @@ local function reload_reach_method2()
     })
     reachMethod2X = ReachMethod2.size.X
     reachMethod2Z = ReachMethod2.size.Z
+    ReachMethod2.setVisualizerEnabled(reachVisualizer2)
 end
 
 local function reload_reach_method3()
@@ -277,6 +282,7 @@ local function reload_reach_method3()
     })
     reachMethod3X = ReachHRP.size.X
     reachMethod3Z = ReachHRP.size.Z
+    ReachHRP.setVisualizerEnabled(reachVisualizer3)
 end
 
 local reachToggle
@@ -330,7 +336,7 @@ reachTab:Slider({
     Step = 1,
     Value = {
         Min = 1,
-        Max = 30,
+        Max = 10,
         Default = ReachFTI.studs or 10,
     },
     Callback = function(value)
@@ -338,6 +344,17 @@ reachTab:Slider({
         if reachEnabled then
             ReachFTI.enable()
         end
+    end,
+})
+
+reachTab:Space()
+
+reachTab:Toggle({
+    Title = "Method 1 visualizer",
+    Value = reachVisualizer1,
+    Callback = function(state)
+        reachVisualizer1 = state
+        ReachFTI.setVisualizerEnabled(state)
     end,
 })
 
@@ -367,7 +384,7 @@ reachTab:Slider({
     Step = 1,
     Value = {
         Min = 2,
-        Max = 40,
+        Max = 10,
         Default = reachMethod2X,
     },
     Callback = function(value)
@@ -381,12 +398,21 @@ reachTab:Slider({
     Step = 1,
     Value = {
         Min = 2,
-        Max = 40,
+        Max = 10,
         Default = reachMethod2Z,
     },
     Callback = function(value)
         reachMethod2Z = value
         ReachMethod2.setSize(reachMethod2X, reachMethod2Z)
+    end,
+})
+
+reachTab:Toggle({
+    Title = "Method 2 visualizer",
+    Value = reachVisualizer2,
+    Callback = function(state)
+        reachVisualizer2 = state
+        ReachMethod2.setVisualizerEnabled(state)
     end,
 })
 
@@ -422,7 +448,7 @@ reachTab:Slider({
     Step = 1,
     Value = {
         Min = 2,
-        Max = 40,
+        Max = 10,
         Default = reachMethod3X,
     },
     Callback = function(value)
@@ -436,12 +462,21 @@ reachTab:Slider({
     Step = 1,
     Value = {
         Min = 2,
-        Max = 40,
+        Max = 10,
         Default = reachMethod3Z,
     },
     Callback = function(value)
         reachMethod3Z = value
         ReachHRP.setSize(reachMethod3X, reachMethod3Z)
+    end,
+})
+
+reachTab:Toggle({
+    Title = "Method 3 visualizer",
+    Value = reachVisualizer3,
+    Callback = function(state)
+        reachVisualizer3 = state
+        ReachHRP.setVisualizerEnabled(state)
     end,
 })
 
@@ -467,22 +502,6 @@ reactsTab:Button({
     Title = "Better React",
     Callback = function()
         local ok, message = Reacts.betterReact()
-        notify(WindUI, message)
-    end,
-})
-
-reactsTab:Button({
-    Title = "Alz React",
-    Callback = function()
-        local ok, message = Reacts.alzReact()
-        notify(WindUI, message)
-    end,
-})
-
-reactsTab:Button({
-    Title = "Foxtede React",
-    Callback = function()
-        local ok, message = Reacts.foxtedeReact()
         notify(WindUI, message)
     end,
 })
@@ -612,10 +631,6 @@ ballTab:Dropdown({
 
 local airSize = 20
 AirHelper = ensure_air_helper()
-local miscTab = window:Tab({
-    Title = "Misc",
-    Icon = "layers-2",
-})
 
 local helpersTab = window:Tab({
     Title = "Helpers",
@@ -624,7 +639,11 @@ local helpersTab = window:Tab({
 
 InfDribbleHelper = ensure_inf_dribble_helper()
 
-miscTab:Toggle({
+helpersTab:Section({
+    Title = "Air Helper",
+})
+
+helpersTab:Toggle({
     Title = "Air helper",
     Value = false,
     Callback = function(state)
@@ -640,9 +659,9 @@ miscTab:Toggle({
     end,
 })
 
-miscTab:Space()
+helpersTab:Space()
 
-miscTab:Slider({
+helpersTab:Slider({
     Title = "Air helper size",
     Step = 1,
     Value = {
@@ -655,6 +674,8 @@ miscTab:Slider({
         AirHelper.setSize(value)
     end,
 })
+
+helpersTab:Space()
 
 helpersTab:Section({
     Title = "Inf Dribble Helper",
