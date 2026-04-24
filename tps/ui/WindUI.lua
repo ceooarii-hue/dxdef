@@ -1,7 +1,10 @@
 local REMOTE_BASE = "https://raw.githubusercontent.com/ceooarii-hue/dxdef/main/"
 
 local function normalize_remote_path(path)
-    return path:gsub(" ", "%%20")
+    return path
+        :gsub(" ", "%%20")
+        :gsub("%(", "%%28")
+        :gsub("%)", "%%29")
 end
 
 local function run_module(paths)
@@ -134,6 +137,7 @@ local AvatarStolen = run_module({
     "modules/Avatarstolen.lua",
 })
 
+local ok, result = pcall(function()
 local WindUI = load_windui()
 local window = WindUI:CreateWindow({
     Title = "REMAP-H | TPS",
@@ -730,3 +734,15 @@ avatarTab:Button({
         })
     end,
 })
+end)
+
+if not ok then
+    warn("REMAP-H UI failed:", result)
+    pcall(function()
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "REMAP-H",
+            Text = tostring(result),
+            Duration = 8,
+        })
+    end)
+end
