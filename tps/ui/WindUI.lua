@@ -69,9 +69,24 @@ local ReachFTI = run_module({
     "modules/Reach(FTI).lua",
 })
 
+local ReachMethod2 = run_module({
+    "tps/modules/Reach Method 2.lua",
+    "modules/Reach Method 2.lua",
+})
+
+local ReachHRP = run_module({
+    "tps/modules/Reach Method 3.lua",
+    "modules/Reach Method 3.lua",
+})
+
 local Reacts = run_module({
     "tps/modules/Reacts.lua",
     "modules/Reacts.lua",
+})
+
+local GKReact = run_module({
+    "tps/modules/GK React.lua",
+    "modules/GK React.lua",
 })
 
 local LookDistance = run_module({
@@ -107,6 +122,11 @@ local BallSkin = run_module({
 local AirHelper = run_module({
     "tps/modules/AirHelper.lua",
     "modules/AirHelper.lua",
+})
+
+local InfDribbleHelper = run_module({
+    "tps/modules/Inf Dribble Helper.lua",
+    "modules/Inf Dribble Helper.lua",
 })
 
 local AvatarStolen = run_module({
@@ -168,6 +188,14 @@ chamsTab:Toggle({
     end,
 })
 
+chamsTab:Toggle({
+    Title = "Include self",
+    Value = Chams.includeSelf,
+    Callback = function(state)
+        Chams.setIncludeSelf(state)
+    end,
+})
+
 chamsTab:Space()
 
 chamsTab:Colorpicker({
@@ -219,26 +247,88 @@ chamsTab:Slider({
 })
 
 local reachEnabled = false
+local reachMethod2Enabled = false
+local reachMethod3Enabled = false
 local reachTab = window:Tab({
     Title = "Reach",
     Icon = "accessibility",
 })
 
-reachTab:Toggle({
+local reachMethod2X = ReachMethod2.size.X
+local reachMethod2Z = ReachMethod2.size.Z
+local reachMethod3X = ReachHRP.size.X
+local reachMethod3Z = ReachHRP.size.Z
+
+local function reload_reach_fti()
+    ReachFTI.destroy()
+    ReachFTI = run_module({
+        "tps/modules/Reach(FTI).lua",
+        "modules/Reach(FTI).lua",
+    })
+end
+
+local function reload_reach_method2()
+    ReachMethod2.destroy()
+    ReachMethod2 = run_module({
+        "tps/modules/Reach Method 2.lua",
+        "modules/Reach Method 2.lua",
+    })
+    reachMethod2X = ReachMethod2.size.X
+    reachMethod2Z = ReachMethod2.size.Z
+end
+
+local function reload_reach_method3()
+    ReachHRP.destroy()
+    ReachHRP = run_module({
+        "tps/modules/Reach Method 3.lua",
+        "modules/Reach Method 3.lua",
+    })
+    reachMethod3X = ReachHRP.size.X
+    reachMethod3Z = ReachHRP.size.Z
+end
+
+local reachToggle
+local reachMethod2Toggle
+local reachMethod3Toggle
+
+local function disable_other_reach(active)
+    if active ~= 1 and reachEnabled then
+        reachEnabled = false
+        reload_reach_fti()
+        if reachToggle and reachToggle.Set then pcall(function() reachToggle:Set(false) end) end
+    end
+
+    if active ~= 2 and reachMethod2Enabled then
+        reachMethod2Enabled = false
+        reload_reach_method2()
+        if reachMethod2Toggle and reachMethod2Toggle.Set then pcall(function() reachMethod2Toggle:Set(false) end) end
+    end
+
+    if active ~= 3 and reachMethod3Enabled then
+        reachMethod3Enabled = false
+        reload_reach_method3()
+        if reachMethod3Toggle and reachMethod3Toggle.Set then pcall(function() reachMethod3Toggle:Set(false) end) end
+    end
+end
+
+reachToggle = reachTab:Toggle({
     Title = "Enable reach",
     Value = false,
     Callback = function(state)
         reachEnabled = state
         if state then
+            disable_other_reach(1)
             ReachFTI.enable()
         else
-            ReachFTI.destroy()
-            ReachFTI = run_module({
-                "tps/modules/Reach(FTI).lua",
-                "modules/Reach(FTI).lua",
-            })
+            reload_reach_fti()
         end
     end,
+})
+
+reachTab:Space()
+
+reachTab:Section({
+    Title = "Only one reach method can be active at a time.",
 })
 
 reachTab:Space()
@@ -257,6 +347,116 @@ reachTab:Slider({
             ReachFTI.enable()
         end
     end,
+})
+
+reachTab:Space()
+
+reachTab:Section({
+    Title = "Reach Method 2",
+})
+
+reachMethod2Toggle = reachTab:Toggle({
+    Title = "Enable reach method 2",
+    Value = false,
+    Callback = function(state)
+        reachMethod2Enabled = state
+        if state then
+            disable_other_reach(2)
+            ReachMethod2.enable()
+            ReachMethod2.setSize(reachMethod2X, reachMethod2Z)
+        else
+            reload_reach_method2()
+        end
+    end,
+})
+
+reachTab:Slider({
+    Title = "Method 2 Size X",
+    Step = 1,
+    Value = {
+        Min = 2,
+        Max = 40,
+        Default = reachMethod2X,
+    },
+    Callback = function(value)
+        reachMethod2X = value
+        ReachMethod2.setSize(reachMethod2X, reachMethod2Z)
+    end,
+})
+
+reachTab:Slider({
+    Title = "Method 2 Size Z",
+    Step = 1,
+    Value = {
+        Min = 2,
+        Max = 40,
+        Default = reachMethod2Z,
+    },
+    Callback = function(value)
+        reachMethod2Z = value
+        ReachMethod2.setSize(reachMethod2X, reachMethod2Z)
+    end,
+})
+
+reachTab:Space()
+
+reachTab:Section({
+    Title = "Method 2 is full body reach with blue visualizers.",
+})
+
+reachTab:Space()
+
+reachTab:Section({
+    Title = "Reach Method 3",
+})
+
+reachMethod3Toggle = reachTab:Toggle({
+    Title = "Enable reach method 3",
+    Value = false,
+    Callback = function(state)
+        reachMethod3Enabled = state
+        if state then
+            disable_other_reach(3)
+            ReachHRP.enable()
+            ReachHRP.setSize(reachMethod3X, reachMethod3Z)
+        else
+            reload_reach_method3()
+        end
+    end,
+})
+
+reachTab:Slider({
+    Title = "Method 3 Size X",
+    Step = 1,
+    Value = {
+        Min = 2,
+        Max = 40,
+        Default = reachMethod3X,
+    },
+    Callback = function(value)
+        reachMethod3X = value
+        ReachHRP.setSize(reachMethod3X, reachMethod3Z)
+    end,
+})
+
+reachTab:Slider({
+    Title = "Method 3 Size Z",
+    Step = 1,
+    Value = {
+        Min = 2,
+        Max = 40,
+        Default = reachMethod3Z,
+    },
+    Callback = function(value)
+        reachMethod3Z = value
+        ReachHRP.setSize(reachMethod3X, reachMethod3Z)
+    end,
+})
+
+reachTab:Space()
+
+reachTab:Section({
+    Title = "Method 1 visualizer is red. Method 3 visualizer is green.",
 })
 
 local reactsEnabled = false
@@ -294,6 +494,36 @@ reactsTab:Button({
 })
 
 reactsTab:Space()
+
+reactsTab:Section({
+    Title = "GK React",
+})
+
+reactsTab:Toggle({
+    Title = "Enable GK React",
+    Value = GKReact.enabled,
+    Callback = function(state)
+        if state then
+            GKReact.enable()
+            notify(WindUI, "GK React enabled")
+        else
+            GKReact.disable()
+            notify(WindUI, "GK React disabled")
+        end
+    end,
+})
+
+reactsTab:Dropdown({
+    Title = "GK Part",
+    Values = { "LLCL", "RLCL", "HumanoidRootPart" },
+    Value = GKReact.preferredPart,
+    Callback = function(value)
+        GKReact.setPart(value)
+    end,
+})
+
+reactsTab:Space()
+
 reactsTab:Section({
     Title = "Cada react aplica velocidad durante varios frames para que pegue mejor.",
 })
@@ -390,6 +620,11 @@ local miscTab = window:Tab({
     Icon = "layers-2",
 })
 
+local helpersTab = window:Tab({
+    Title = "Helpers",
+    Icon = "wrench",
+})
+
 miscTab:Toggle({
     Title = "Air helper",
     Value = false,
@@ -420,6 +655,42 @@ miscTab:Slider({
         airSize = value
         AirHelper.setSize(value)
     end,
+})
+
+helpersTab:Section({
+    Title = "Inf Dribble Helper",
+})
+
+helpersTab:Toggle({
+    Title = "Enable Inf Dribble Helper [PC]",
+    Desc = "Toggle follow with B.",
+    Value = false,
+    Callback = function(state)
+        if state then
+            InfDribbleHelper.enable()
+            notify(WindUI, "Inf Dribble Helper enabled")
+        else
+            InfDribbleHelper.disable()
+            notify(WindUI, "Inf Dribble Helper disabled")
+        end
+    end,
+})
+
+helpersTab:Slider({
+    Title = "Stop Distance",
+    Step = 0.25,
+    Value = {
+        Min = 1,
+        Max = 6,
+        Default = InfDribbleHelper.stopDistance,
+    },
+    Callback = function(value)
+        InfDribbleHelper.setStopDistance(value)
+    end,
+})
+
+helpersTab:Section({
+    Title = "Press B to start or stop following the ball while enabled.",
 })
 
 local avatarTab = window:Tab({

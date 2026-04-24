@@ -9,6 +9,7 @@ end
 
 local Chams = {
     enabled = false,
+    includeSelf = true,
     fillColor = Color3.fromRGB(255, 85, 85),
     outlineColor = Color3.fromRGB(255, 255, 255),
     fillTransparency = 0.5,
@@ -102,7 +103,8 @@ local function ensure_box(player, char)
 end
 
 local function apply_visuals(player)
-    if not Chams.enabled or player == lp then return end
+    if not Chams.enabled then return end
+    if player == lp and not Chams.includeSelf then return end
 
     local char = player.Character
     if not char or not char.Parent then
@@ -133,7 +135,7 @@ local function apply_visuals(player)
 end
 
 local function watch_player(player)
-    if player == lp or Chams.playerConns[player] then return end
+    if Chams.playerConns[player] then return end
 
     Chams.playerConns[player] = player.CharacterAdded:Connect(function(char)
         if Chams.charConns[player] then
@@ -183,7 +185,7 @@ function Chams.setEnabled(state)
             Chams.hbConn = RunService.Heartbeat:Connect(function()
                 if not Chams.enabled then return end
                 for _, player in ipairs(Players:GetPlayers()) do
-                    if player ~= lp and player.Character and (Chams.style == "Box" or Chams.style == "Hybrid") then
+                    if (player ~= lp or Chams.includeSelf) and player.Character and (Chams.style == "Box" or Chams.style == "Hybrid") then
                         local box = Chams.boxAdornments[player]
                         if box then
                             box.Size = player.Character:GetExtentsSize() + Vector3.new(0.15, 0.15, 0.15)
@@ -216,6 +218,14 @@ end
 
 function Chams.setThroughWalls(state)
     Chams.throughWalls = state
+    Chams.refresh()
+end
+
+function Chams.setIncludeSelf(state)
+    Chams.includeSelf = state
+    if not state then
+        clear_visuals(lp)
+    end
     Chams.refresh()
 end
 
