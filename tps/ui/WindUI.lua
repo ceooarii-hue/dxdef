@@ -1,3 +1,5 @@
+local REMOTE_BASE = "https://raw.githubusercontent.com/ceooarii-hue/dxdef/main/"
+
 local function run_local(paths)
     for _, path in ipairs(paths) do
         local ok, result = pcall(readfile, path)
@@ -6,7 +8,17 @@ local function run_local(paths)
         end
     end
 
-    error("failed to read local script: " .. table.concat(paths, ", "))
+    for _, path in ipairs(paths) do
+        local ok, result = pcall(function()
+            return game:HttpGet(REMOTE_BASE .. path)
+        end)
+
+        if ok and result and result ~= "404: Not Found" then
+            return loadstring(result)()
+        end
+    end
+
+    error("failed to load script: " .. table.concat(paths, ", "))
 end
 
 local function load_windui()
