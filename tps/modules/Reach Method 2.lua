@@ -122,7 +122,7 @@ getgenv().ReachMethod2 = {
     size = Vector3.new(25, 2, 25),
 }
 
-function getgenv().ReachMethod2.enable()
+getgenv().ReachMethod2.enable = function()
     local char = lp.Character
     if char then
         task.spawn(apply, char)
@@ -132,7 +132,7 @@ function getgenv().ReachMethod2.enable()
     _char_conn = lp.CharacterAdded:Connect(apply)
 end
 
-function getgenv().ReachMethod2.setSize(x, z)
+getgenv().ReachMethod2.setSize = function(x, z)
     getgenv().ReachMethod2.size = Vector3.new(x, 2, z)
     for _, entry in ipairs(_parts) do
         if entry.original and entry.original.Parent then
@@ -144,7 +144,7 @@ function getgenv().ReachMethod2.setSize(x, z)
     end
 end
 
-function getgenv().ReachMethod2.destroy()
+getgenv().ReachMethod2.destroy = function()
     if _char_conn then _char_conn:Disconnect(); _char_conn = nil end
     cleanup_parts()
     getgenv().ReachMethod2 = nil

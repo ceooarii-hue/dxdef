@@ -55,19 +55,19 @@ if not shared.hooked then
     shared.hooked = true
 end
 
-function GKReact.enable()
+GKReact.enable = function()
     GKReact.enabled = true
 end
 
-function GKReact.disable()
+GKReact.disable = function()
     GKReact.enabled = false
 end
 
-function GKReact.setPart(partName)
+GKReact.setPart = function(partName)
     GKReact.preferredPart = partName
 end
 
-function GKReact.destroy()
+GKReact.destroy = function()
     GKReact.disable()
     getgenv().GKReact = nil
 end

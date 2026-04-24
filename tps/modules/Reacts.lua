@@ -46,19 +46,19 @@ local function apply_react(linearVelocity, angularVelocity, frames)
     return true, "React applied"
 end
 
-function Reacts.betterReact()
+Reacts.betterReact = function()
     return apply_react(Vector3.new(112, 112, 112), Vector3.new(20, 20, 20), 7)
 end
 
-function Reacts.alzReact()
+Reacts.alzReact = function()
     return apply_react(Vector3.new(122, 132, 122), Vector3.new(24, 20, 24), 8)
 end
 
-function Reacts.foxtedeReact()
+Reacts.foxtedeReact = function()
     return apply_react(Vector3.new(138, 126, 138), Vector3.new(30, 24, 30), 9)
 end
 
-function Reacts.destroy()
+Reacts.destroy = function()
     stop_active()
     getgenv().Reacts = nil
 end

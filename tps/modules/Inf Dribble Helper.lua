@@ -64,25 +64,25 @@ local function ensure_connections()
     end
 end
 
-function Helper.enable()
+Helper.enable = function()
     Helper.enabled = true
     ensure_connections()
 end
 
-function Helper.disable()
+Helper.disable = function()
     Helper.enabled = false
     stop_following()
 end
 
-function Helper.setToggleKey(keyCode)
+Helper.setToggleKey = function(keyCode)
     Helper.toggleKey = keyCode
 end
 
-function Helper.setStopDistance(distance)
+Helper.setStopDistance = function(distance)
     Helper.stopDistance = distance
 end
 
-function Helper.destroy()
+Helper.destroy = function()
     if inputConn then inputConn:Disconnect(); inputConn = nil end
     if stepConn then stepConn:Disconnect(); stepConn = nil end
     Helper.disable()

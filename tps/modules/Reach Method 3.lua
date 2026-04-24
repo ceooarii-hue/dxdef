@@ -57,7 +57,7 @@ getgenv().ReachHRP = {
     size = Vector3.new(15, 2, 15),
 }
 
-function getgenv().ReachHRP.enable()
+getgenv().ReachHRP.enable = function()
     local char = lp.Character
     if char then apply(char) end
 
@@ -65,7 +65,7 @@ function getgenv().ReachHRP.enable()
     _char_conn = lp.CharacterAdded:Connect(apply)
 end
 
-function getgenv().ReachHRP.setSize(x, z)
+getgenv().ReachHRP.setSize = function(x, z)
     getgenv().ReachHRP.size = Vector3.new(x, 2, z)
 
     local char = lp.Character
@@ -82,7 +82,7 @@ function getgenv().ReachHRP.setSize(x, z)
     end
 end
 
-function getgenv().ReachHRP.destroy()
+getgenv().ReachHRP.destroy = function()
     if _char_conn then _char_conn:Disconnect(); _char_conn = nil end
     if _prop_conn then _prop_conn:Disconnect(); _prop_conn = nil end
     if _visualizer then _visualizer:Destroy(); _visualizer = nil end
