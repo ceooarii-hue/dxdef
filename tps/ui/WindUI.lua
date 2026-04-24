@@ -62,80 +62,63 @@ run_module({
     "modules/Bypass.lua",
 })
 
-local Chams = run_module({
-    "tps/modules/Chams.lua",
-    "modules/Chams.lua",
-})
+local Chams, ReachFTI, ReachMethod2, ReachHRP, Reacts, GKReact
+local BallSize, BallSkin, AirHelper, InfDribbleHelper, AvatarStolen
 
-local ReachFTI = run_module({
-    "tps/modules/Reach(FTI).lua",
-    "modules/Reach(FTI).lua",
-})
+local function ensure_chams()
+    Chams = Chams or run_module({ "tps/modules/Chams.lua", "modules/Chams.lua" })
+    return Chams
+end
 
-local ReachMethod2 = run_module({
-    "tps/modules/Reach Method 2.lua",
-    "modules/Reach Method 2.lua",
-})
+local function ensure_reach_fti()
+    ReachFTI = ReachFTI or run_module({ "tps/modules/Reach(FTI).lua", "modules/Reach(FTI).lua" })
+    return ReachFTI
+end
 
-local ReachHRP = run_module({
-    "tps/modules/Reach Method 3.lua",
-    "modules/Reach Method 3.lua",
-})
+local function ensure_reach_method2()
+    ReachMethod2 = ReachMethod2 or run_module({ "tps/modules/Reach Method 2.lua", "modules/Reach Method 2.lua" })
+    return ReachMethod2
+end
 
-local Reacts = run_module({
-    "tps/modules/Reacts.lua",
-    "modules/Reacts.lua",
-})
+local function ensure_reach_method3()
+    ReachHRP = ReachHRP or run_module({ "tps/modules/Reach Method 3.lua", "modules/Reach Method 3.lua" })
+    return ReachHRP
+end
 
-local GKReact = run_module({
-    "tps/modules/GK React.lua",
-    "modules/GK React.lua",
-})
+local function ensure_reacts()
+    Reacts = Reacts or run_module({ "tps/modules/Reacts.lua", "modules/Reacts.lua" })
+    return Reacts
+end
 
-local LookDistance = run_module({
-    "tps/modules/Look distance.lua",
-    "modules/Look distance.lua",
-})
+local function ensure_gk_react()
+    GKReact = GKReact or run_module({ "tps/modules/GK React.lua", "modules/GK React.lua" })
+    return GKReact
+end
 
-local FirstClick = run_module({
-    "tps/modules/First click.lua",
-    "modules/First click.lua",
-})
+local function ensure_ball_size()
+    BallSize = BallSize or run_module({ "tps/modules/Ball size.lua", "modules/Ball size.lua" })
+    return BallSize
+end
 
-local SecondClick = run_module({
-    "tps/modules/Second click.lua",
-    "modules/Second click.lua",
-})
+local function ensure_ball_skin()
+    BallSkin = BallSkin or run_module({ "tps/modules/Ball skin changer.lua", "modules/Ball skin changer.lua" })
+    return BallSkin
+end
 
-local MacroReact = run_module({
-    "tps/modules/Macro react.lua",
-    "modules/Macro react.lua",
-})
+local function ensure_air_helper()
+    AirHelper = AirHelper or run_module({ "tps/modules/AirHelper.lua", "modules/AirHelper.lua" })
+    return AirHelper
+end
 
-local BallSize = run_module({
-    "tps/modules/Ball size.lua",
-    "modules/Ball size.lua",
-})
+local function ensure_inf_dribble_helper()
+    InfDribbleHelper = InfDribbleHelper or run_module({ "tps/modules/Inf Dribble Helper.lua", "modules/Inf Dribble Helper.lua" })
+    return InfDribbleHelper
+end
 
-local BallSkin = run_module({
-    "tps/modules/Ball skin changer.lua",
-    "modules/Ball skin changer.lua",
-})
-
-local AirHelper = run_module({
-    "tps/modules/AirHelper.lua",
-    "modules/AirHelper.lua",
-})
-
-local InfDribbleHelper = run_module({
-    "tps/modules/Inf Dribble Helper.lua",
-    "modules/Inf Dribble Helper.lua",
-})
-
-local AvatarStolen = run_module({
-    "tps/modules/Avatarstolen.lua",
-    "modules/Avatarstolen.lua",
-})
+local function ensure_avatar_stolen()
+    AvatarStolen = AvatarStolen or run_module({ "tps/modules/Avatarstolen.lua", "modules/Avatarstolen.lua" })
+    return AvatarStolen
+end
 
 local ok, result = pcall(function()
 local WindUI = load_windui()
@@ -158,6 +141,8 @@ getgenv().RemapHWindow = window
 
 notify(WindUI, "bypass active")
 notify(WindUI, "Welcome back, " .. lp.Name .. "!")
+
+Chams = ensure_chams()
 
 local chamsTab = window:Tab({
     Title = "Chams",
@@ -253,6 +238,9 @@ chamsTab:Slider({
 local reachEnabled = false
 local reachMethod2Enabled = false
 local reachMethod3Enabled = false
+ReachFTI = ensure_reach_fti()
+ReachMethod2 = ensure_reach_method2()
+ReachHRP = ensure_reach_method3()
 local reachTab = window:Tab({
     Title = "Reach",
     Icon = "accessibility",
@@ -464,6 +452,8 @@ reachTab:Section({
 })
 
 local reactsEnabled = false
+Reacts = ensure_reacts()
+GKReact = ensure_gk_react()
 local reactsTab = window:Tab({
     Title = "Reacts",
     Icon = "zap",
@@ -538,6 +528,8 @@ local ballTab = window:Tab({
 })
 
 local ballSizeEnabled = false
+BallSize = ensure_ball_size()
+BallSkin = ensure_ball_skin()
 local ballSizeX = 3
 local ballSizeY = 3
 local ballSizeZ = 3
@@ -619,6 +611,7 @@ ballTab:Dropdown({
 })
 
 local airSize = 20
+AirHelper = ensure_air_helper()
 local miscTab = window:Tab({
     Title = "Misc",
     Icon = "layers-2",
@@ -628,6 +621,8 @@ local helpersTab = window:Tab({
     Title = "Helpers",
     Icon = "wrench",
 })
+
+InfDribbleHelper = ensure_inf_dribble_helper()
 
 miscTab:Toggle({
     Title = "Air helper",
@@ -701,6 +696,8 @@ local avatarTab = window:Tab({
     Title = "Avatar",
     Icon = "user-round",
 })
+
+AvatarStolen = ensure_avatar_stolen()
 
 local avatarName = ""
 
