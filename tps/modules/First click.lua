@@ -1,15 +1,17 @@
-if getgenv().FirstClick and type(getgenv().FirstClick.destroy) == "function" then
-    pcall(getgenv().FirstClick.destroy)
+local env = getgenv()
+
+if env.FirstClick and type(env.FirstClick.destroy) == "function" then
+    pcall(env.FirstClick.destroy)
 end
 
-getgenv().FirstClick = {
+env.FirstClick = {
     value = 2.4,
     set = function(n)
-        getgenv().FirstClick.value = n
+        env.FirstClick.value = n
     end,
     destroy = function()
-        getgenv().FirstClick = nil
+        env.FirstClick = nil
     end,
 }
 
-return getgenv().FirstClick
+return env.FirstClick

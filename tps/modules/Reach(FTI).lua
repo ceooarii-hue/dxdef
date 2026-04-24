@@ -1,3 +1,4 @@
+local env      = getgenv()
 local plrs     = cloneref(game:GetService("Players"))
 local rs       = cloneref(game:GetService("RunService"))
 local lighting = cloneref(game:GetService("Lighting"))
@@ -5,8 +6,8 @@ local CoreGui  = cloneref(game:GetService("CoreGui"))
 local lp       = plrs.LocalPlayer
 local sys      = workspace:WaitForChild("TPSSystem")
 
-if getgenv().ReachFTI and type(getgenv().ReachFTI.destroy) == "function" then
-    pcall(getgenv().ReachFTI.destroy)
+if env.ReachFTI and type(env.ReachFTI.destroy) == "function" then
+    pcall(env.ReachFTI.destroy)
 end
 
 local _conn = nil
@@ -28,8 +29,8 @@ local function get_leg(char)
     return char:FindFirstChild(name)
 end
 
-getgenv().ReachFTI = {}
-getgenv().ReachFTI.studs = 10
+env.ReachFTI = {}
+env.ReachFTI.studs = 10
 
 local function update_visual(leg)
     if not _visual then
@@ -47,13 +48,13 @@ local function update_visual(leg)
         return
     end
 
-    local studs = getgenv().ReachFTI and getgenv().ReachFTI.studs or 10
+    local studs = env.ReachFTI and env.ReachFTI.studs or 10
     _visual.Adornee = leg
     _visual.Size = Vector3.new(studs * 2, 2, studs * 2)
     _visual.Visible = true
 end
 
-getgenv().ReachFTI.enable = function()
+env.ReachFTI.enable = function()
     if _conn then return end
 
     _conn = rs.Heartbeat:Connect(function()
@@ -64,22 +65,22 @@ getgenv().ReachFTI.enable = function()
         if not leg or not tps then return end
 
         local dist = (leg.Position - tps.Position).Magnitude
-        if dist > (getgenv().ReachFTI and getgenv().ReachFTI.studs or 10) then return end
+        if dist > (env.ReachFTI and env.ReachFTI.studs or 10) then return end
 
         firetouchinterest(leg, tps, 0)
         firetouchinterest(leg, tps, 1)
     end)
 end
 
-getgenv().ReachFTI.setStuds = function(n)
-    if not getgenv().ReachFTI then return end
-    getgenv().ReachFTI.studs = n
+env.ReachFTI.setStuds = function(n)
+    if not env.ReachFTI then return end
+    env.ReachFTI.studs = n
 end
 
-getgenv().ReachFTI.destroy = function()
+env.ReachFTI.destroy = function()
     if _conn then _conn:Disconnect(); _conn = nil end
     if _visual then _visual:Destroy(); _visual = nil end
-    getgenv().ReachFTI = nil
+    env.ReachFTI = nil
 end
 
-return getgenv().ReachFTI
+return env.ReachFTI

@@ -1,9 +1,10 @@
+local env = getgenv()
 local plrs = cloneref(game:GetService("Players"))
 local CoreGui = cloneref(game:GetService("CoreGui"))
 local lp = plrs.LocalPlayer
 
-if getgenv().ReachMethod2 and type(getgenv().ReachMethod2.destroy) == "function" then
-    pcall(getgenv().ReachMethod2.destroy)
+if env.ReachMethod2 and type(env.ReachMethod2.destroy) == "function" then
+    pcall(env.ReachMethod2.destroy)
 end
 
 local _char_conn = nil
@@ -79,7 +80,7 @@ local function apply(char)
             visualizer.Transparency = 0.72
             visualizer.AlwaysOnTop = true
             visualizer.ZIndex = 5
-            visualizer.Size = getgenv().ReachMethod2.size
+            visualizer.Size = env.ReachMethod2.size
 
             _parts[#_parts + 1] = {
                 original = original,
@@ -91,17 +92,17 @@ local function apply(char)
             }
 
             original.Transparency = 1
-            original.Size = getgenv().ReachMethod2.size
+            original.Size = env.ReachMethod2.size
             original.Massless = true
         end
     end
 
-    local last = getgenv().ReachMethod2.size
+    local last = env.ReachMethod2.size
     local token = _size_token + 1
     _size_token = token
     task.spawn(function()
-        while _size_token == token and getgenv().ReachMethod2 do
-            local cur = getgenv().ReachMethod2.size
+        while _size_token == token and env.ReachMethod2 do
+            local cur = env.ReachMethod2.size
             if cur ~= last then
                 for _, entry in ipairs(_parts) do
                     if entry.original and entry.original.Parent then
@@ -118,11 +119,11 @@ local function apply(char)
     end)
 end
 
-getgenv().ReachMethod2 = {
+env.ReachMethod2 = {
     size = Vector3.new(25, 2, 25),
 }
 
-getgenv().ReachMethod2.enable = function()
+env.ReachMethod2.enable = function()
     local char = lp.Character
     if char then
         task.spawn(apply, char)
@@ -132,22 +133,22 @@ getgenv().ReachMethod2.enable = function()
     _char_conn = lp.CharacterAdded:Connect(apply)
 end
 
-getgenv().ReachMethod2.setSize = function(x, z)
-    getgenv().ReachMethod2.size = Vector3.new(x, 2, z)
+env.ReachMethod2.setSize = function(x, z)
+    env.ReachMethod2.size = Vector3.new(x, 2, z)
     for _, entry in ipairs(_parts) do
         if entry.original and entry.original.Parent then
-            entry.original.Size = getgenv().ReachMethod2.size
+            entry.original.Size = env.ReachMethod2.size
         end
         if entry.visualizer and entry.visualizer.Parent then
-            entry.visualizer.Size = getgenv().ReachMethod2.size
+            entry.visualizer.Size = env.ReachMethod2.size
         end
     end
 end
 
-getgenv().ReachMethod2.destroy = function()
+env.ReachMethod2.destroy = function()
     if _char_conn then _char_conn:Disconnect(); _char_conn = nil end
     cleanup_parts()
-    getgenv().ReachMethod2 = nil
+    env.ReachMethod2 = nil
 end
 
-return getgenv().ReachMethod2
+return env.ReachMethod2

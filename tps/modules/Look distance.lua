@@ -1,15 +1,17 @@
-if getgenv().LookDistance and type(getgenv().LookDistance.destroy) == "function" then
-    pcall(getgenv().LookDistance.destroy)
+local env = getgenv()
+
+if env.LookDistance and type(env.LookDistance.destroy) == "function" then
+    pcall(env.LookDistance.destroy)
 end
 
-getgenv().LookDistance = {
+env.LookDistance = {
     value = 6,
     set = function(n)
-        getgenv().LookDistance.value = n
+        env.LookDistance.value = n
     end,
     destroy = function()
-        getgenv().LookDistance = nil
+        env.LookDistance = nil
     end,
 }
 
-return getgenv().LookDistance
+return env.LookDistance

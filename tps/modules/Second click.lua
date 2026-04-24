@@ -1,15 +1,17 @@
-if getgenv().SecondClick and type(getgenv().SecondClick.destroy) == "function" then
-    pcall(getgenv().SecondClick.destroy)
+local env = getgenv()
+
+if env.SecondClick and type(env.SecondClick.destroy) == "function" then
+    pcall(env.SecondClick.destroy)
 end
 
-getgenv().SecondClick = {
+env.SecondClick = {
     value = 1.2,
     set = function(n)
-        getgenv().SecondClick.value = n
+        env.SecondClick.value = n
     end,
     destroy = function()
-        getgenv().SecondClick = nil
+        env.SecondClick = nil
     end,
 }
 
-return getgenv().SecondClick
+return env.SecondClick

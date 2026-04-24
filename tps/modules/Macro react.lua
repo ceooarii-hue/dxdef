@@ -1,15 +1,17 @@
-if getgenv().MacroReact and type(getgenv().MacroReact.destroy) == "function" then
-    pcall(getgenv().MacroReact.destroy)
+local env = getgenv()
+
+if env.MacroReact and type(env.MacroReact.destroy) == "function" then
+    pcall(env.MacroReact.destroy)
 end
 
-getgenv().MacroReact = {
+env.MacroReact = {
     enabled = true,
     set = function(state)
-        getgenv().MacroReact.enabled = state
+        env.MacroReact.enabled = state
     end,
     destroy = function()
-        getgenv().MacroReact = nil
+        env.MacroReact = nil
     end,
 }
 
-return getgenv().MacroReact
+return env.MacroReact
