@@ -151,6 +151,25 @@ chamsTab:Toggle({
 
 chamsTab:Space()
 
+chamsTab:Dropdown({
+    Title = "Style",
+    Values = { "Highlight", "Outline", "Box", "Hybrid" },
+    Value = Chams.style,
+    Callback = function(value)
+        Chams.setStyle(value)
+    end,
+})
+
+chamsTab:Toggle({
+    Title = "Through walls",
+    Value = Chams.throughWalls,
+    Callback = function(state)
+        Chams.setThroughWalls(state)
+    end,
+})
+
+chamsTab:Space()
+
 chamsTab:Colorpicker({
     Title = "Fill color",
     Default = Chams.fillColor,
@@ -246,123 +265,37 @@ local reactsTab = window:Tab({
     Icon = "zap",
 })
 
-reactsTab:Toggle({
-    Title = "Enable reacts",
-    Desc = "Touch mas rapido, 0 delay.",
-    Value = false,
-    Callback = function(state)
-        reactsEnabled = state
-        if state then
-            Reacts.enable()
-        else
-            Reacts.destroy()
-            Reacts = run_module({
-                "tps/modules/Reacts.lua",
-                "modules/Reacts.lua",
-            })
-        end
+reactsTab:Section({
+    Title = "Ball Reactions",
+})
+
+reactsTab:Button({
+    Title = "Better React",
+    Callback = function()
+        local ok, message = Reacts.betterReact()
+        notify(WindUI, message)
+    end,
+})
+
+reactsTab:Button({
+    Title = "Alz React",
+    Callback = function()
+        local ok, message = Reacts.alzReact()
+        notify(WindUI, message)
+    end,
+})
+
+reactsTab:Button({
+    Title = "Foxtede React",
+    Callback = function()
+        local ok, message = Reacts.foxtedeReact()
+        notify(WindUI, message)
     end,
 })
 
 reactsTab:Space()
-
-reactsTab:Slider({
-    Title = "React Distance",
-    Step = 1,
-    Value = {
-        Min = 1,
-        Max = 30,
-        Default = Reacts.reactDistance or 10,
-    },
-    Callback = function(value)
-        Reacts.setReactDistance(value)
-    end,
-})
-
-reactsTab:Slider({
-    Title = "Look Distance",
-    Step = 1,
-    Value = {
-        Min = 1,
-        Max = 15,
-        Default = LookDistance.value,
-    },
-    Callback = function(value)
-        LookDistance.set(value)
-    end,
-})
-
-reactsTab:Slider({
-    Title = "ZZ Helps",
-    Step = 1,
-    Value = {
-        Min = 0,
-        Max = 10,
-        Default = Reacts.zzHelps or 1,
-    },
-    Callback = function(value)
-        Reacts.setZZHelps(value)
-    end,
-})
-
-reactsTab:Slider({
-    Title = "React Speed",
-    Step = 0.01,
-    Value = {
-        Min = 0,
-        Max = 1,
-        Default = Reacts.reactSpeed or 0.25,
-    },
-    Callback = function(value)
-        Reacts.setReactSpeed(value)
-    end,
-})
-
-reactsTab:Slider({
-    Title = "First Click",
-    Step = 0.01,
-    Value = {
-        Min = 0,
-        Max = 1,
-        Default = FirstClick.value,
-    },
-    Callback = function(value)
-        FirstClick.set(value)
-    end,
-})
-
-reactsTab:Slider({
-    Title = "Second Click",
-    Step = 0.01,
-    Value = {
-        Min = 0,
-        Max = 1,
-        Default = SecondClick.value,
-    },
-    Callback = function(value)
-        SecondClick.set(value)
-    end,
-})
-
-reactsTab:Slider({
-    Title = "Break React Speed",
-    Step = 0.01,
-    Value = {
-        Min = 0,
-        Max = 1,
-        Default = Reacts.breakReactSpeed or 0.25,
-    },
-    Callback = function(value)
-        Reacts.setBreakReactSpeed(value)
-    end,
-})
-
-reactsTab:Toggle({
-    Title = "Macro React",
-    Value = MacroReact.enabled,
-    Callback = function(state)
-        MacroReact.set(state)
-    end,
+reactsTab:Section({
+    Title = "Cada react aplica velocidad durante varios frames para que pegue mejor.",
 })
 
 local ballTab = window:Tab({

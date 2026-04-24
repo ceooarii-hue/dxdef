@@ -3,7 +3,7 @@ if getgenv().SecondClick and type(getgenv().SecondClick.destroy) == "function" t
 end
 
 getgenv().SecondClick = {
-    value = 0.25,
+    value = 1.2,
     set = function(n)
         getgenv().SecondClick.value = n
     end,
