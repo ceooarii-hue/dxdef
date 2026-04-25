@@ -11,6 +11,46 @@ local charConn = nil
 local sizeToken = 0
 local parts = {}
 
+local function create_visualizer(name, color)
+    local box = Instance.new("BoxHandleAdornment")
+    box.Name = name .. "Fill"
+    box.Parent = CoreGui
+    box.AlwaysOnTop = true
+    box.ZIndex = 5
+    box.Transparency = 0.74
+    box.Color3 = color
+
+    local outline = Instance.new("SelectionBox")
+    outline.Name = name .. "Outline"
+    outline.Parent = CoreGui
+    outline.Color3 = color:Lerp(Color3.new(1, 1, 1), 0.2)
+    outline.LineThickness = 0.045
+    outline.SurfaceTransparency = 1
+
+    return {
+        box = box,
+        outline = outline,
+    }
+end
+
+local function update_visualizer(visualizer, adornee, enabled)
+    local visible = enabled and adornee ~= nil and adornee.Parent ~= nil
+    visualizer.box.Adornee = adornee
+    visualizer.outline.Adornee = adornee
+    visualizer.box.Size = adornee and (adornee.Size + Vector3.new(0.08, 0.08, 0.08)) or Vector3.zero
+    visualizer.box.Visible = visible
+    visualizer.outline.Visible = visible
+end
+
+local function destroy_visualizer(visualizer)
+    if visualizer.box.Parent then
+        visualizer.box:Destroy()
+    end
+    if visualizer.outline.Parent then
+        visualizer.outline:Destroy()
+    end
+end
+
 local function is_body_part(part)
     if not part or not part:IsA("BasePart") then return false end
     local name = part.Name
@@ -28,20 +68,38 @@ local function cleanup_parts()
     sizeToken = sizeToken + 1
 
     for _, entry in ipairs(parts) do
-        if entry.visualizer and entry.visualizer.Parent then
-            entry.visualizer:Destroy()
+        if entry.visualizer then
+            destroy_visualizer(entry.visualizer)
         end
-        if entry.clone and entry.clone.Parent then
-            entry.clone:Destroy()
-        end
-        if entry.original and entry.original.Parent then
-            if entry.origSize then entry.original.Size = entry.origSize end
-            if entry.origTransparency ~= nil then entry.original.Transparency = entry.origTransparency end
-            if entry.origMassless ~= nil then entry.original.Massless = entry.origMassless end
+        if entry.hitbox and entry.hitbox.Parent then
+            entry.hitbox:Destroy()
         end
     end
 
     parts = {}
+end
+
+local function create_hitbox(original, char)
+    local hitbox = Instance.new("Part")
+    hitbox.Name = original.Name .. "_ReachM2Hitbox"
+    hitbox.Transparency = 1
+    hitbox.CanCollide = false
+    hitbox.CanQuery = false
+    hitbox.CanTouch = true
+    hitbox.CastShadow = false
+    hitbox.Massless = true
+    hitbox.Anchored = false
+    hitbox.Locked = true
+    hitbox.Size = env.ReachMethod2.size
+    hitbox.CFrame = original.CFrame
+    hitbox.Parent = char
+
+    local weld = Instance.new("WeldConstraint")
+    weld.Part0 = original
+    weld.Part1 = hitbox
+    weld.Parent = hitbox
+
+    return hitbox
 end
 
 local function apply(char)
@@ -52,47 +110,15 @@ local function apply(char)
 
     for _, original in ipairs(char:GetChildren()) do
         if is_body_part(original) then
-            local origSize = original.Size
-            local origTransparency = original.Transparency
-            local origMassless = original.Massless
-
-            local clone = original:Clone()
-            clone.Name = original.Name .. "_Visual"
-            clone.Size = origSize
-            clone.Transparency = origTransparency
-            clone.Massless = true
-            clone.CanCollide = false
-            clone.Anchored = false
-
-            local weld = Instance.new("WeldConstraint")
-            weld.Part0 = original
-            weld.Part1 = clone
-            weld.Parent = clone
-
-            clone.Parent = char
-            clone.CFrame = original.CFrame
-
-            local visualizer = Instance.new("SelectionBox")
-            visualizer.Name = original.Name .. "_ReachM2"
-            visualizer.Parent = CoreGui
-            visualizer.Adornee = original
-            visualizer.Color3 = Color3.fromRGB(95, 170, 255)
-            visualizer.LineThickness = 0.03
-            visualizer.SurfaceTransparency = 1
-            visualizer.Visible = env.ReachMethod2.visualizerEnabled
+            local hitbox = create_hitbox(original, char)
+            local visualizer = create_visualizer(original.Name .. "_ReachM2", Color3.fromRGB(98, 182, 255))
+            update_visualizer(visualizer, hitbox, env.ReachMethod2.visualizerEnabled)
 
             parts[#parts + 1] = {
                 original = original,
-                clone = clone,
+                hitbox = hitbox,
                 visualizer = visualizer,
-                origSize = origSize,
-                origTransparency = origTransparency,
-                origMassless = origMassless,
             }
-
-            original.Transparency = 1
-            original.Size = env.ReachMethod2.size
-            original.Massless = true
         end
     end
 
@@ -105,16 +131,20 @@ local function apply(char)
             local cur = env.ReachMethod2.size
             if cur ~= last then
                 for _, entry in ipairs(parts) do
-                    if entry.original and entry.original.Parent then
-                        entry.original.Size = cur
+                    if entry.hitbox and entry.hitbox.Parent then
+                        entry.hitbox.Size = cur
                     end
                 end
                 last = cur
             end
 
             for _, entry in ipairs(parts) do
-                if entry.visualizer and entry.visualizer.Parent then
-                    entry.visualizer.Visible = env.ReachMethod2.visualizerEnabled
+                if entry.visualizer then
+                    local adornee = nil
+                    if entry.hitbox and entry.hitbox.Parent then
+                        adornee = entry.hitbox
+                    end
+                    update_visualizer(entry.visualizer, adornee, env.ReachMethod2.visualizerEnabled)
                 end
             end
 
@@ -141,8 +171,8 @@ end
 env.ReachMethod2.setSize = function(x, z)
     env.ReachMethod2.size = Vector3.new(x, 2, z)
     for _, entry in ipairs(parts) do
-        if entry.original and entry.original.Parent then
-            entry.original.Size = env.ReachMethod2.size
+        if entry.hitbox and entry.hitbox.Parent then
+            entry.hitbox.Size = env.ReachMethod2.size
         end
     end
 end
@@ -150,8 +180,12 @@ end
 env.ReachMethod2.setVisualizerEnabled = function(state)
     env.ReachMethod2.visualizerEnabled = state
     for _, entry in ipairs(parts) do
-        if entry.visualizer and entry.visualizer.Parent then
-            entry.visualizer.Visible = state
+        if entry.visualizer then
+            local adornee = nil
+            if entry.hitbox and entry.hitbox.Parent then
+                adornee = entry.hitbox
+            end
+            update_visualizer(entry.visualizer, adornee, state)
         end
     end
 end

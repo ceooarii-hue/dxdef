@@ -13,6 +13,46 @@ end
 local conn = nil
 local visual = nil
 
+local function create_visualizer(name, color)
+    local box = Instance.new("BoxHandleAdornment")
+    box.Name = name .. "Fill"
+    box.Parent = CoreGui
+    box.AlwaysOnTop = true
+    box.ZIndex = 5
+    box.Transparency = 0.72
+    box.Color3 = color
+
+    local outline = Instance.new("SelectionBox")
+    outline.Name = name .. "Outline"
+    outline.Parent = CoreGui
+    outline.Color3 = color:Lerp(Color3.new(1, 1, 1), 0.25)
+    outline.LineThickness = 0.045
+    outline.SurfaceTransparency = 1
+
+    return {
+        box = box,
+        outline = outline,
+    }
+end
+
+local function update_visualizer(adornee, enabled)
+    if not visual then return end
+
+    local visible = enabled and adornee ~= nil
+    visual.box.Adornee = adornee
+    visual.outline.Adornee = adornee
+    visual.box.Size = adornee and (adornee.Size + Vector3.new(0.08, 0.08, 0.08)) or Vector3.zero
+    visual.box.Visible = visible
+    visual.outline.Visible = visible
+end
+
+local function destroy_visualizer()
+    if not visual then return end
+    visual.box:Destroy()
+    visual.outline:Destroy()
+    visual = nil
+end
+
 local function get_leg(char)
     if not char then return nil end
 
@@ -36,26 +76,22 @@ env.ReachFTI = {
 
 local function update_visual(leg)
     if not env.ReachFTI.visualizerEnabled then
-        if visual then visual.Visible = false end
+        if visual then
+            update_visualizer(visual.box.Adornee, false)
+        end
         return
     end
 
     if not visual then
-        visual = Instance.new("SelectionBox")
-        visual.Name = "ReachFTIVisualizer"
-        visual.Parent = CoreGui
-        visual.Color3 = Color3.fromRGB(255, 95, 95)
-        visual.LineThickness = 0.03
-        visual.SurfaceTransparency = 1
+        visual = create_visualizer("ReachFTIVisualizer", Color3.fromRGB(255, 108, 108))
     end
 
     if not leg then
-        visual.Visible = false
+        update_visualizer(nil, false)
         return
     end
 
-    visual.Adornee = leg
-    visual.Visible = true
+    update_visualizer(leg, true)
 end
 
 env.ReachFTI.enable = function()
@@ -89,13 +125,13 @@ env.ReachFTI.setVisualizerEnabled = function(state)
     end
 
     if visual then
-        visual.Visible = state and visual.Adornee ~= nil
+        update_visualizer(visual.box.Adornee, state)
     end
 end
 
 env.ReachFTI.destroy = function()
     if conn then conn:Disconnect(); conn = nil end
-    if visual then visual:Destroy(); visual = nil end
+    destroy_visualizer()
     env.ReachFTI = nil
 end
 

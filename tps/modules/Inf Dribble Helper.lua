@@ -14,6 +14,8 @@ local Helper = {
     following = false,
     toggleKey = Enum.KeyCode.B,
     stopDistance = 2.25,
+    predictionTime = 0.12,
+    orbitPadding = 1.15,
 }
 
 local inputConn = nil
@@ -29,8 +31,32 @@ local function get_humanoid()
     return char:FindFirstChildOfClass("Humanoid"), char:FindFirstChild("HumanoidRootPart")
 end
 
+local function stop_motion()
+    local humanoid = get_humanoid()
+    if humanoid then
+        humanoid:Move(Vector3.zero, false)
+    end
+end
+
 local function stop_following()
     Helper.following = false
+    stop_motion()
+end
+
+local function flatten(v)
+    return Vector3.new(v.X, 0, v.Z)
+end
+
+local function get_target_position(ball, root)
+    local predictedBall = ball.Position + flatten(ball.AssemblyLinearVelocity) * Helper.predictionTime
+    local fromBallToPlayer = flatten(root.Position - predictedBall)
+
+    if fromBallToPlayer.Magnitude < 0.05 then
+        fromBallToPlayer = flatten(-root.CFrame.LookVector)
+    end
+
+    local stopOffset = math.min(Helper.stopDistance * 0.6, Helper.orbitPadding)
+    return predictedBall + fromBallToPlayer.Unit * stopOffset
 end
 
 local function ensure_connections()
@@ -50,6 +76,7 @@ local function ensure_connections()
             local ball = get_ball()
             local humanoid, root = get_humanoid()
             if not ball or not humanoid or not root or humanoid.Health <= 0 then
+                stop_motion()
                 return
             end
 
@@ -59,7 +86,15 @@ local function ensure_connections()
                 return
             end
 
-            humanoid:MoveTo(ball.Position)
+            local target = get_target_position(ball, root)
+            local moveDirection = flatten(target - root.Position)
+
+            if moveDirection.Magnitude < 0.05 then
+                humanoid:Move(Vector3.zero, false)
+                return
+            end
+
+            humanoid:Move(moveDirection.Unit, false)
         end)
     end
 end

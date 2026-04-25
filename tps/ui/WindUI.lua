@@ -122,10 +122,106 @@ end
 
 local ok, result = pcall(function()
 local WindUI = load_windui()
+local uiState = getgenv().RemapHUIState or {
+    activeTheme = "REMAP Night",
+    customTheme = {
+        accent = Color3.fromRGB(95, 135, 255),
+        background = Color3.fromRGB(11, 14, 24),
+        surface = Color3.fromRGB(21, 27, 44),
+        text = Color3.fromRGB(240, 244, 255),
+    },
+}
+
+getgenv().RemapHUIState = uiState
+
+local function mix(a, b, alpha)
+    return a:Lerp(b, alpha)
+end
+
+local function make_theme(name, palette)
+    local accent = palette.accent
+    local background = palette.background
+    local surface = palette.surface
+    local text = palette.text
+    local icon = mix(text, accent, 0.3)
+    local hover = mix(surface, text, 0.08)
+
+    return {
+        Name = name,
+        Accent = accent,
+        Background = background,
+        WindowBackground = background,
+        PanelBackground = surface,
+        Hover = hover,
+        Text = text,
+        Icon = icon,
+        Button = accent,
+        Checkbox = accent,
+        Slider = accent,
+        Notification = surface,
+        White = Color3.new(1, 1, 1),
+        Black = Color3.new(0, 0, 0),
+    }
+end
+
+local presetThemes = {
+    ["REMAP Night"] = {
+        accent = Color3.fromRGB(95, 135, 255),
+        background = Color3.fromRGB(11, 14, 24),
+        surface = Color3.fromRGB(21, 27, 44),
+        text = Color3.fromRGB(240, 244, 255),
+    },
+    ["REMAP Ocean"] = {
+        accent = Color3.fromRGB(30, 184, 255),
+        background = Color3.fromRGB(7, 23, 31),
+        surface = Color3.fromRGB(13, 42, 56),
+        text = Color3.fromRGB(232, 249, 255),
+    },
+    ["REMAP Rose"] = {
+        accent = Color3.fromRGB(255, 98, 146),
+        background = Color3.fromRGB(28, 12, 20),
+        surface = Color3.fromRGB(45, 20, 33),
+        text = Color3.fromRGB(255, 239, 245),
+    },
+    ["REMAP Lime"] = {
+        accent = Color3.fromRGB(153, 255, 102),
+        background = Color3.fromRGB(14, 20, 11),
+        surface = Color3.fromRGB(24, 33, 20),
+        text = Color3.fromRGB(244, 255, 235),
+    },
+}
+
+local function register_theme(name, palette)
+    local themes = WindUI.GetThemes and WindUI:GetThemes() or WindUI.Themes
+    if themes and themes[name] then
+        for key, value in pairs(make_theme(name, palette)) do
+            themes[name][key] = value
+        end
+    else
+        WindUI:AddTheme(make_theme(name, palette))
+    end
+end
+
+for name, palette in pairs(presetThemes) do
+    register_theme(name, palette)
+end
+
+local function apply_custom_theme(setActive)
+    register_theme("Custom", uiState.customTheme)
+    if setActive then
+        uiState.activeTheme = "Custom"
+        WindUI:SetTheme("Custom")
+    elseif uiState.activeTheme == "Custom" then
+        WindUI:SetTheme("Custom")
+    end
+end
+
+apply_custom_theme(false)
+
 local window = WindUI:CreateWindow({
     Title = "REMAP-H | TPS",
     Folder = "REMAPH_TPS",
-    Icon = "eye",
+    Icon = "sparkles",
     HideSearchBar = true,
     OpenButton = {
         Title = "REMAP-H",
@@ -137,16 +233,87 @@ local window = WindUI:CreateWindow({
 
 window:SetToggleKey(Enum.KeyCode.K)
 
+if not presetThemes[uiState.activeTheme] and uiState.activeTheme ~= "Custom" then
+    uiState.activeTheme = "REMAP Night"
+end
+
+WindUI:SetTheme(uiState.activeTheme)
+
 getgenv().RemapHWindow = window
 
 notify(WindUI, "bypass active")
 notify(WindUI, "Welcome back, " .. lp.Name .. "!")
 
+local uiTab = window:Tab({
+    Title = "UI",
+    Icon = "palette",
+})
+
+uiTab:Section({
+    Title = "Themes",
+})
+
+uiTab:Dropdown({
+    Title = "Theme preset",
+    Values = { "REMAP Night", "REMAP Ocean", "REMAP Rose", "REMAP Lime", "Custom" },
+    Value = uiState.activeTheme,
+    Callback = function(value)
+        uiState.activeTheme = value
+        if value == "Custom" then
+            apply_custom_theme(true)
+        else
+            WindUI:SetTheme(value)
+        end
+    end,
+})
+
+uiTab:Space()
+
+uiTab:Colorpicker({
+    Title = "Custom accent",
+    Default = uiState.customTheme.accent,
+    Callback = function(color)
+        uiState.customTheme.accent = color
+        apply_custom_theme(uiState.activeTheme == "Custom")
+    end,
+})
+
+uiTab:Colorpicker({
+    Title = "Custom background",
+    Default = uiState.customTheme.background,
+    Callback = function(color)
+        uiState.customTheme.background = color
+        apply_custom_theme(uiState.activeTheme == "Custom")
+    end,
+})
+
+uiTab:Colorpicker({
+    Title = "Custom surface",
+    Default = uiState.customTheme.surface,
+    Callback = function(color)
+        uiState.customTheme.surface = color
+        apply_custom_theme(uiState.activeTheme == "Custom")
+    end,
+})
+
+uiTab:Colorpicker({
+    Title = "Custom text",
+    Default = uiState.customTheme.text,
+    Callback = function(color)
+        uiState.customTheme.text = color
+        apply_custom_theme(uiState.activeTheme == "Custom")
+    end,
+})
+
+uiTab:Section({
+    Title = "Usa un preset o cambia colores y luego elige Custom para aplicar tu theme.",
+})
+
 Chams = ensure_chams()
 
 local chamsTab = window:Tab({
     Title = "Chams",
-    Icon = "eye",
+    Icon = "scan-eye",
 })
 
 chamsTab:Toggle({
@@ -243,7 +410,7 @@ ReachMethod2 = ensure_reach_method2()
 ReachHRP = ensure_reach_method3()
 local reachTab = window:Tab({
     Title = "Reach",
-    Icon = "accessibility",
+    Icon = "crosshair",
 })
 
 local reachMethod2X = ReachMethod2.size.X
@@ -419,7 +586,7 @@ reachTab:Toggle({
 reachTab:Space()
 
 reachTab:Section({
-    Title = "Method 2 is full body reach with blue visualizers.",
+    Title = "Method 2 usa el mismo estilo visual, pero aplicado a todo el cuerpo.",
 })
 
 reachTab:Space()
@@ -483,7 +650,7 @@ reachTab:Toggle({
 reachTab:Space()
 
 reachTab:Section({
-    Title = "Method 1 visualizer is red. Method 3 visualizer is green.",
+    Title = "Los tres methods ahora comparten el mismo look con distinto color por modo.",
 })
 
 local reactsEnabled = false
@@ -543,7 +710,7 @@ reactsTab:Section({
 
 local ballTab = window:Tab({
     Title = "Ball",
-    Icon = "circle",
+    Icon = "circle-dot",
 })
 
 local ballSizeEnabled = false
@@ -634,7 +801,7 @@ AirHelper = ensure_air_helper()
 
 local helpersTab = window:Tab({
     Title = "Helpers",
-    Icon = "wrench",
+    Icon = "wand-sparkles",
 })
 
 InfDribbleHelper = ensure_inf_dribble_helper()
@@ -710,12 +877,12 @@ helpersTab:Slider({
 })
 
 helpersTab:Section({
-    Title = "Press B to start or stop following the ball while enabled.",
+    Title = "Press B to start or stop following the ball with smoother tracking.",
 })
 
 local avatarTab = window:Tab({
     Title = "Avatar",
-    Icon = "user-round",
+    Icon = "contact-round",
 })
 
 AvatarStolen = ensure_avatar_stolen()
